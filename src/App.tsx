@@ -4,6 +4,8 @@ import SignIn from './pages/SignIn'
 import AdminShell from './components/AdminShell'
 import type { PanelKey } from './components/AdminShell'
 import Overview from './pages/Overview'
+import List from './pages/List'
+
 
 export type Session = Awaited<
   ReturnType<typeof supabase.auth.getSession>
@@ -56,7 +58,9 @@ export default function App() {
     <AdminShell active={panel} onNavigate={setPanel}>
       {panel === 'overview' && <Overview userName={fullName} />}
 
-      {panel !== 'overview' && (
+      {panel === 'list' && <List />}
+
+      {panel !== 'overview' && panel !== 'list' && (
         <div>
           <h1 style={{
             fontFamily: 'Georgia, serif',
