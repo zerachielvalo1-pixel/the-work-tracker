@@ -44,136 +44,59 @@ export default function Overview({ userName }: { userName: string }) {
   const upcoming = open.filter((t) => t.due_date).slice(0, 6)
 
   const stats = [
-    { value: open.length,       label: 'Total open' },
-    { value: inProgress.length, label: 'In progress' },
-    { value: dueThisWeek.length,label: 'Due this week' },
-    { value: overdue.length,    label: 'Overdue' },
+    { value: open.length,        label: 'Total open' },
+    { value: inProgress.length,  label: 'In progress' },
+    { value: dueThisWeek.length, label: 'Due this week' },
+    { value: overdue.length,     label: 'Overdue' },
   ]
 
   return (
     <div>
-      <h1 style={{
-        fontFamily: 'Georgia, serif',
-        fontSize: 28,
-        fontWeight: 900,
-        margin: '0 0 6px',
-        letterSpacing: '-0.02em',
-      }}>
-        Welcome back, {userName}.
-      </h1>
-      <p style={{ fontSize: 13, color: '#6B5B8E', margin: '0 0 28px' }}>
-        Here's what's happening with The Work's content.
-      </p>
+      <div className="page__head">
+        <h1 className="page__title">Welcome back, {userName}.</h1>
+        <p className="page__sub">
+          Here's what's happening with The Work's content.
+        </p>
+      </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: 14,
-        marginBottom: 28,
-      }}>
+      <div className="stats">
         {stats.map((s) => (
-          <div
-            key={s.label}
-            style={{
-              background: '#fff',
-              border: '1px solid #E5DDF5',
-              borderRadius: 12,
-              padding: 18,
-            }}
-          >
-            <b style={{
-              display: 'block',
-              fontFamily: 'Georgia, serif',
-              fontSize: 28,
-              fontWeight: 900,
-              lineHeight: 1,
-              marginBottom: 6,
-              letterSpacing: '-0.02em',
-              background: 'linear-gradient(135deg,#7C3AED,#A855F7,#D946EF)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              {loading ? '—' : s.value}
-            </b>
-            <span style={{
-              fontSize: 11,
-              fontWeight: 650,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              color: '#6B5B8E',
-            }}>
-              {s.label}
-            </span>
+          <div className="stat" key={s.label}>
+            <b className="stat__value">{loading ? '—' : s.value}</b>
+            <span className="stat__label">{s.label}</span>
           </div>
         ))}
       </div>
 
-      <div style={{
-        background: '#fff',
-        border: '1px solid #E5DDF5',
-        borderRadius: 12,
-        padding: 22,
-      }}>
-        <h2 style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 18,
-          fontWeight: 900,
-          margin: '0 0 4px',
-        }}>
-          Upcoming deadlines
-        </h2>
-        <p style={{ fontSize: 13, color: '#6B5B8E', margin: '0 0 18px' }}>
-          The next tasks by due date.
-        </p>
+      <div className="card">
+        <h2 className="card__title">Upcoming deadlines</h2>
+        <p className="card__sub">The next tasks by due date.</p>
 
         {loading ? (
-          <p style={{ color: '#6B5B8E', fontSize: 13 }}>Loading…</p>
+          <p className="muted-note">Loading…</p>
         ) : upcoming.length === 0 ? (
-          <p style={{ color: '#6B5B8E', fontSize: 13 }}>No deadlines scheduled.</p>
+          <p className="muted-note">No deadlines scheduled.</p>
         ) : (
-          upcoming.map((t) => (
-            <div
-              key={t.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 0',
-                borderBottom: '1px solid #EFE8FA',
-              }}
-            >
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: '#1A0E2E',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {t.title}
+          <div className="rows">
+            {upcoming.map((t) => (
+              <div className="row-item" key={t.id}>
+                <div style={{ minWidth: 0 }}>
+                  <div className="row-item__title">{t.title}</div>
+                  <div className="row-item__meta">
+                    {t.status.replace('_', ' ')} · {t.priority}
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: '#9A8EB8', marginTop: 2 }}>
-                  {t.status.replace('_', ' ')} · {t.priority}
+                <div className="row-item__date">
+                  {t.due_date
+                    ? new Date(t.due_date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : '—'}
                 </div>
               </div>
-              <div style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: '#6B5B8E',
-                marginLeft: 12,
-                whiteSpace: 'nowrap',
-              }}>
-                {t.due_date
-                  ? new Date(t.due_date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                  : '—'}
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>

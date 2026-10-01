@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>verify — mobile shell</title>
+    <link rel="stylesheet" href="/assets/index-C-wF8Ngt.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="shell__bar">
+        <button type="button" class="shell__menu" aria-label="Open navigation">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <span class="brand shell__brand"><span class="brand__the">the</span><span class="brand__work">WORK</span></span>
+      </header>
+
+      <div class="shell__scrim"></div>
+
+      <aside class="shell__sidebar">
+        <div class="shell__sidebar-head">
+          <span class="brand" style="font-size: 20px"><span class="brand__the">the</span><span class="brand__work">WORK</span></span>
+          <button type="button" class="shell__close" aria-label="Close navigation">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="shell__label">Dashboard</div>
+        <nav class="shell__nav">
+          <button type="button" class="is-active">Overview</button>
+          <button type="button">Board</button>
+          <button type="button">List</button>
+          <button type="button">New task</button>
+          <button type="button">Calendar</button>
+          <button type="button">Issues</button>
+          <button type="button">Pitch box</button>
+          <button type="button">Team</button>
+          <button type="button">Settings</button>
+        </nav>
+        <div class="shell__sidebar-foot">
+          <button type="button" class="shell__signout">Sign out</button>
+        </div>
+      </aside>
+
+      <main class="shell__main">
+        <div>
+          <div class="page__head">
+            <h1 class="page__title">Welcome back, Amara.</h1>
+            <p class="page__sub">Here's what's happening with The Work's content.</p>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><b class="stat__value">24</b><span class="stat__label">Total open</span></div>
+            <div class="stat"><b class="stat__value">7</b><span class="stat__label">In progress</span></div>
+            <div class="stat"><b class="stat__value">5</b><span class="stat__label">Due this week</span></div>
+            <div class="stat"><b class="stat__value">3</b><span class="stat__label">Overdue</span></div>
+          </div>
+
+          <div class="card">
+            <h2 class="card__title">Upcoming deadlines</h2>
+            <p class="card__sub">The next tasks by due date.</p>
+            <div class="rows">
+              <div class="row-item">
+                <div style="min-width: 0">
+                  <div class="row-item__title">The quiet rise of night-shift bakeries</div>
+                  <div class="row-item__meta">in progress · high</div>
+                </div>
+                <div class="row-item__date">Oct 4</div>
+              </div>
+              <div class="row-item">
+                <div style="min-width: 0">
+                  <div class="row-item__title">Photos: harbour at first light</div>
+                  <div class="row-item__meta">copyread · normal</div>
+                </div>
+                <div class="row-item__date">Oct 6</div>
+              </div>
+              <div class="row-item">
+                <div style="min-width: 0">
+                  <div class="row-item__title">Folio piece — letters to the editor</div>
+                  <div class="row-item__meta">layout · urgent</div>
+                </div>
+                <div class="row-item__date">Oct 11</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px">
+            <div class="page__head" style="margin-bottom: 16px">
+              <h1 class="page__title">All tasks</h1>
+            </div>
+            <div class="toolbar">
+              <input class="input" type="search" placeholder="Search by title…" />
+              <select class="select"><option>All statuses</option></select>
+            </div>
+            <div class="task-card table-scroll">
+              <table class="tasktable">
+                <thead>
+                  <tr>
+                    <th scope="col">Title</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Priority</th><th scope="col">Due</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td data-label="Title">The quiet rise of night-shift bakeries</td>
+                    <td data-label="Type" style="color: #6b5b8e; text-transform: capitalize">article</td>
+                    <td data-label="Status"><span class="badge" style="background: #efe8fa; color: #7c3aed">in progress</span></td>
+                    <td data-label="Priority"><span class="badge" style="background: #fff4e5; color: #9a5b00">high</span></td>
+                    <td data-label="Due" style="color: #6b5b8e; white-space: nowrap">Oct 4, 2026</td>
+                  </tr>
+                  <tr>
+                    <td data-label="Title">Photos: harbour at first light</td>
+                    <td data-label="Type" style="color: #6b5b8e; text-transform: capitalize">photo</td>
+                    <td data-label="Status"><span class="badge" style="background: #fceffe; color: #b01fa8">copyread</span></td>
+                    <td data-label="Priority"><span class="badge" style="background: #f2edfb; color: #3d2e5c">normal</span></td>
+                    <td data-label="Due" style="color: #6b5b8e; white-space: nowrap">Oct 6, 2026</td>
+                  </tr>
+                  <tr>
+                    <td data-label="Title">Folio piece — letters to the editor</td>
+                    <td data-label="Type" style="color: #6b5b8e; text-transform: capitalize">folio piece</td>
+                    <td data-label="Status"><span class="badge" style="background: #fff4e5; color: #9a5b00">layout</span></td>
+                    <td data-label="Priority"><span class="badge" style="background: #fdecea; color: #8f1d17">urgent</span></td>
+                    <td data-label="Due" style="color: #6b5b8e; white-space: nowrap">Oct 11, 2026</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="foot-note">3 of 24 tasks</p>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script>
+      // Preview-only: exercise the real open/closed class contract so the
+      // drawer and scrim can be inspected in their open state.
+      const sidebar = document.querySelector('.shell__sidebar')
+      const scrim = document.querySelector('.shell__scrim')
+      document.querySelector('.shell__menu').addEventListener('click', () => {
+        sidebar.classList.add('is-open')
+        scrim.classList.add('is-open')
+      })
+      document.querySelector('.shell__close').addEventListener('click', () => {
+        sidebar.classList.remove('is-open')
+        scrim.classList.remove('is-open')
+      })
+    </script>
+  </body>
+</html>

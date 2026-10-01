@@ -6,7 +6,6 @@ import type { PanelKey } from './components/AdminShell'
 import Overview from './pages/Overview'
 import List from './pages/List'
 
-
 export type Session = Awaited<
   ReturnType<typeof supabase.auth.getSession>
 >['data']['session']
@@ -30,10 +29,12 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (!session) {
-      setFullName('')
-      return
-    }
+    // No session means no profile to load. Clearing `fullName` here would be a
+    // synchronous setState inside an effect (cascading render); it is not
+    // needed either, because signing out unmounts the shell and this state
+    // with it.
+    if (!session) return
+
     supabase
       .from('profiles')
       .select('full_name')
@@ -46,8 +47,9 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ padding: 40, fontFamily: 'system-ui', color: '#666' }}>
-        Loading…
+      <div className="boot" role="status" aria-live="polite">
+        <span className="boot__spinner" aria-hidden="true" />
+        <span>Loading…</span>
       </div>
     )
   }
@@ -61,18 +63,11 @@ export default function App() {
       {panel === 'list' && <List />}
 
       {panel !== 'overview' && panel !== 'list' && (
-        <div>
-          <h1 style={{
-            fontFamily: 'Georgia, serif',
-            fontSize: 26,
-            fontWeight: 900,
-            textTransform: 'capitalize',
-          }}>
+        <div className="page__head">
+          <h1 className="page__title" style={{ textTransform: 'capitalize' }}>
             {panel}
           </h1>
-          <p style={{ color: '#6B5B8E', fontSize: 14 }}>
-            This panel is coming in a future milestone.
-          </p>
+          <p className="page__sub">This panel is coming in a future milestone.</p>
         </div>
       )}
     </AdminShell>

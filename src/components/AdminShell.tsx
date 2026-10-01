@@ -1,20 +1,56 @@
 import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export type PanelKey =
   | 'overview' | 'board' | 'list' | 'calendar'
-  | 'issues' | 'pitches' | 'team' | 'settings'
+  | 'issues' | 'pitches' | 'team' | 'settings' | 'new-task'
 
 const NAV: { key: PanelKey; label: string }[] = [
   { key: 'overview', label: 'Overview' },
   { key: 'board',    label: 'Board' },
   { key: 'list',     label: 'List' },
+  { key: 'new-task', label: 'New task' },
   { key: 'calendar', label: 'Calendar' },
   { key: 'issues',   label: 'Issues' },
   { key: 'pitches',  label: 'Pitch box' },
   { key: 'team',     label: 'Team' },
   { key: 'settings', label: 'Settings' },
 ]
+
+function MenuIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18M3 12h18M3 18h18" />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  )
+}
 
 export default function AdminShell({
   active,
@@ -25,97 +61,110 @@ export default function AdminShell({
   onNavigate: (k: PanelKey) => void
   children: ReactNode
 }) {
+  const [open, setOpen] = useState(false)
+
+  // Close the drawer on Escape so it behaves like a real dialog
+  useEffect(() => {
+    if (!open) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [open])
+
+  // Stop the page behind the drawer from scrolling (the body-scroll-lock
+  // problem that makes off-canvas menus feel broken on iOS)
+  useEffect(() => {
+    if (!open) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [open])
+
+  function navigate(key: PanelKey) {
+    onNavigate(key)
+    setOpen(false)
+  }
+
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '230px 1fr',
-      minHeight: '100vh',
-      background: '#FAF8FF',
-      fontFamily: 'system-ui, sans-serif',
-    }}>
-      <aside style={{
-        background: '#fff',
-        borderRight: '1px solid #E5DDF5',
-        padding: '24px 14px',
-      }}>
-        <div style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 20,
-          fontWeight: 900,
-          letterSpacing: '-0.04em',
-          marginBottom: 24,
-          paddingLeft: 10,
-        }}>
-          <span style={{ fontWeight: 400, color: '#1A0E2E' }}>the</span>
-          <span style={{
-            background: 'linear-gradient(135deg,#7C3AED,#A855F7,#D946EF)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>WORK</span>
+    <div className="shell">
+      {/* Mobile top bar — hidden from 900px up */}
+      <header className="shell__bar">
+        <button
+          type="button"
+          className="shell__menu"
+          onClick={() => setOpen(true)}
+          aria-label="Open navigation"
+          aria-expanded={open}
+          aria-controls="app-sidebar"
+        >
+          <MenuIcon />
+        </button>
+        <span className="brand shell__brand" aria-hidden="true">
+          <span className="brand__the">the</span>
+          <span className="brand__work">WORK</span>
+        </span>
+      </header>
+
+      {/* Tap-outside target for the drawer */}
+      <div
+        className={open ? 'shell__scrim is-open' : 'shell__scrim'}
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
+
+      <aside
+        id="app-sidebar"
+        className={open ? 'shell__sidebar is-open' : 'shell__sidebar'}
+      >
+        <div className="shell__sidebar-head">
+          <span className="brand" style={{ fontSize: 20 }} aria-hidden="true">
+            <span className="brand__the">the</span>
+            <span className="brand__work">WORK</span>
+          </span>
+          <button
+            type="button"
+            className="shell__close"
+            onClick={() => setOpen(false)}
+            aria-label="Close navigation"
+          >
+            <CloseIcon />
+          </button>
         </div>
 
-        <div style={{
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: '0.13em',
-          textTransform: 'uppercase',
-          color: '#9A8EB8',
-          padding: '0 10px',
-          marginBottom: 12,
-        }}>
+        <div className="shell__label" id="app-nav-label">
           Dashboard
         </div>
 
-        <nav style={{ display: 'grid', gap: 2 }}>
-          {NAV.map((n) => {
-            const on = active === n.key
-            return (
-              <button
-                key={n.key}
-                onClick={() => onNavigate(n.key)}
-                style={{
-                  padding: '10px 12px',
-                  textAlign: 'left',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  borderRadius: 6,
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: on
-                    ? 'linear-gradient(135deg,#7C3AED,#A855F7,#D946EF)'
-                    : 'transparent',
-                  color: on ? '#fff' : '#3D2E5C',
-                }}
-              >
-                {n.label}
-              </button>
-            )
-          })}
+        <nav className="shell__nav" aria-labelledby="app-nav-label">
+          {NAV.map((n) => (
+            <button
+              key={n.key}
+              type="button"
+              className={active === n.key ? 'is-active' : undefined}
+              onClick={() => navigate(n.key)}
+              aria-current={active === n.key ? 'page' : undefined}
+            >
+              {n.label}
+            </button>
+          ))}
         </nav>
 
-        <div style={{ height: 1, background: '#E5DDF5', margin: '16px 0' }} />
-
-        <button
-          onClick={() => supabase.auth.signOut()}
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            textAlign: 'left',
-            fontSize: 13,
-            fontWeight: 600,
-            borderRadius: 6,
-            border: 'none',
-            background: 'transparent',
-            color: '#8F1D17',
-            cursor: 'pointer',
-          }}
-        >
-          Sign out
-        </button>
+        <div className="shell__sidebar-foot">
+          <button
+            type="button"
+            className="shell__signout"
+            onClick={() => supabase.auth.signOut()}
+          >
+            Sign out
+          </button>
+        </div>
       </aside>
 
-      <main style={{ padding: 32, maxWidth: 1120 }}>{children}</main>
+      <main className="shell__main">{children}</main>
     </div>
   )
 }

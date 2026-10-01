@@ -2,9 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- viewport-fit=cover lets the layout extend under the notch; the
+         env(safe-area-inset-*) rules in index.css pad the content back in. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>the-work-tracker</title>
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <title>The Work — Tracker</title>
+    <meta
+      name="description"
+      content="Editorial task tracker for The Work: pitches, stories, photos and layouts in one place."
+    />
+
+    <!-- Tints the mobile browser UI to the app background instead of default white -->
+    <meta name="theme-color" content="#FAF8FF" />
+
+    <!-- Not a standalone installable app yet; keeps the title clean in iOS Safari -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="The Work" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <meta name="format-detection" content="telephone=no" />
+
+    <style>
+      /* Painted before the bundle arrives so there is no white flash on a
+         slow mobile connection. Mirrors --bg in src/index.css. */
+      html {
+        background: #faf8ff;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

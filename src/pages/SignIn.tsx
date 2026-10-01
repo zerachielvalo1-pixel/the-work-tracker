@@ -27,111 +27,60 @@ export default function SignIn() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'grid',
-        placeItems: 'center',
-        background: '#FAF8FF',
-        fontFamily: 'system-ui',
-        padding: 20,
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          width: '100%',
-          maxWidth: 380,
-          background: '#fff',
-          border: '1px solid #E5DDF5',
-          borderRadius: 12,
-          padding: 28,
-          boxShadow: '0 4px 14px rgba(26,14,46,.08)',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: 22 }}>
-          <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.04em' }}>
-            <span style={{ fontWeight: 400 }}>the</span>
-            <span
-              style={{
-                background: 'linear-gradient(135deg,#7C3AED,#A855F7,#D946EF)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              WORK
-            </span>
+    <div className="signin">
+      <form className="signin__card" onSubmit={handleSubmit}>
+        <div className="signin__head">
+          <div className="brand signin__brand" aria-hidden="true">
+            <span className="brand__the">the</span>
+            <span className="brand__work">WORK</span>
           </div>
-          <h2 style={{ margin: '12px 0 4px', fontSize: 20 }}>Editor Sign In</h2>
-          <p style={{ margin: 0, fontSize: 13, color: '#6B5B8E' }}>
-            Sign in to manage The Work.
-          </p>
+          <h1 className="signin__title">Editor Sign In</h1>
+          <p className="signin__sub">Sign in to manage The Work.</p>
         </div>
 
         {error && (
-          <div
-            style={{
-              background: '#FDECEA',
-              border: '1px solid #F4B8B0',
-              color: '#8F1D17',
-              padding: '10px 13px',
-              borderRadius: 6,
-              fontSize: 13,
-              marginBottom: 14,
-            }}
-          >
+          <div className="alert" role="alert">
             {error}
           </div>
         )}
 
-        <label style={{ display: 'block', marginBottom: 14 }}>
-          <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#3D2E5C', marginBottom: 6 }}>
+        <div className="form-field">
+          <label className="form-label" htmlFor="signin-email">
             Email
-          </span>
+          </label>
           <input
+            id="signin-email"
+            className="input"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="username"
-            style={{
-              width: '100%', padding: '11px 13px', fontSize: 14,
-              border: '1.5px solid #E5DDF5', borderRadius: 6,
-              outline: 'none', boxSizing: 'border-box',
-            }}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="email"
+            enterKeyHint="next"
           />
-        </label>
+        </div>
 
-        <label style={{ display: 'block', marginBottom: 20 }}>
-          <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#3D2E5C', marginBottom: 6 }}>
+        <div className="form-field" style={{ marginBottom: 20 }}>
+          <label className="form-label" htmlFor="signin-password">
             Password
-          </span>
+          </label>
           <input
+            id="signin-password"
+            className="input"
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            style={{
-              width: '100%', padding: '11px 13px', fontSize: 14,
-              border: '1.5px solid #E5DDF5', borderRadius: 6,
-              outline: 'none', boxSizing: 'border-box',
-            }}
+            enterKeyHint="go"
           />
-        </label>
+        </div>
 
-        <button
-          type="submit"
-          disabled={busy}
-          style={{
-            width: '100%', padding: '12px', fontSize: 14, fontWeight: 600,
-            color: '#fff',
-            background: 'linear-gradient(135deg,#7C3AED,#A855F7,#D946EF)',
-            border: 'none', borderRadius: 6, cursor: busy ? 'not-allowed' : 'pointer',
-            opacity: busy ? 0.6 : 1,
-          }}
-        >
+        <button type="submit" className="btn btn--primary" style={{ width: '100%' }} disabled={busy}>
           {busy ? 'Signing in…' : 'Sign In'}
         </button>
       </form>

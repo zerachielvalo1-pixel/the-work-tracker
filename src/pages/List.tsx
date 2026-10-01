@@ -32,20 +32,7 @@ const PRIORITY_COLORS: Record<string, { bg: string; fg: string }> = {
 function StatusBadge({ status }: { status: string }) {
   const c = STATUS_COLORS[status] ?? { bg: '#F2EDFB', fg: '#3D2E5C' }
   return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 5,
-      padding: '3px 10px',
-      borderRadius: 999,
-      fontFamily: 'system-ui',
-      fontSize: 11,
-      fontWeight: 700,
-      background: c.bg,
-      color: c.fg,
-      whiteSpace: 'nowrap',
-      textTransform: 'capitalize',
-    }}>
+    <span className="badge" style={{ background: c.bg, color: c.fg }}>
       {status.replace('_', ' ')}
     </span>
   )
@@ -54,17 +41,7 @@ function StatusBadge({ status }: { status: string }) {
 function PriorityBadge({ priority }: { priority: string }) {
   const c = PRIORITY_COLORS[priority] ?? { bg: '#F2EDFB', fg: '#3D2E5C' }
   return (
-    <span style={{
-      display: 'inline-flex',
-      padding: '3px 10px',
-      borderRadius: 999,
-      fontFamily: 'system-ui',
-      fontSize: 11,
-      fontWeight: 700,
-      background: c.bg,
-      color: c.fg,
-      textTransform: 'capitalize',
-    }}>
+    <span className="badge" style={{ background: c.bg, color: c.fg }}>
       {priority}
     </span>
   )
@@ -96,54 +73,37 @@ export default function List() {
 
   return (
     <div>
-      <h1 style={{
-        fontFamily: 'Georgia, serif',
-        fontSize: 26,
-        fontWeight: 900,
-        margin: '0 0 6px',
-        letterSpacing: '-0.02em',
-      }}>
-        All tasks
-      </h1>
-      <p style={{ fontSize: 13, color: '#6B5B8E', margin: '0 0 24px' }}>
-        Every story, photo, and layout in one place.
-      </p>
+      <div className="page__head">
+        <h1 className="page__title">All tasks</h1>
+        <p className="page__sub">
+          Every story, photo, and layout in one place.
+        </p>
+      </div>
 
-      <div style={{
-        display: 'flex',
-        gap: 12,
-        marginBottom: 16,
-        flexWrap: 'wrap',
-      }}>
+      <div className="toolbar">
+        <label className="sr-only" htmlFor="task-search">
+          Search tasks by title
+        </label>
         <input
-          type="text"
+          id="task-search"
+          className="input"
+          type="search"
+          inputMode="search"
+          enterKeyHint="search"
+          autoComplete="off"
           placeholder="Search by title…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{
-            flex: 1,
-            minWidth: 220,
-            padding: '10px 14px',
-            fontSize: 14,
-            border: '1.5px solid #E5DDF5',
-            borderRadius: 6,
-            outline: 'none',
-            fontFamily: 'system-ui',
-          }}
         />
+
+        <label className="sr-only" htmlFor="task-status">
+          Filter by status
+        </label>
         <select
+          id="task-status"
+          className="select"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            padding: '10px 14px',
-            fontSize: 14,
-            border: '1.5px solid #E5DDF5',
-            borderRadius: 6,
-            outline: 'none',
-            fontFamily: 'system-ui',
-            background: '#fff',
-            minWidth: 160,
-          }}
         >
           <option value="">All statuses</option>
           <option value="pitched">Pitched</option>
@@ -158,31 +118,18 @@ export default function List() {
         </select>
       </div>
 
-      <div style={{
-        background: '#fff',
-        border: '1px solid #E5DDF5',
-        borderRadius: 12,
-        overflow: 'hidden',
-      }}>
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontFamily: 'system-ui',
-        }}>
+      <div className="task-card table-scroll">
+        <table className="tasktable">
+          <caption className="sr-only">
+            Tasks with type, status, priority and due date
+          </caption>
           <thead>
-            <tr style={{
-              background: '#F2EDFB',
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#6B5B8E',
-            }}>
-              <th style={{ textAlign: 'left', padding: '12px 16px' }}>Title</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px' }}>Type</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px' }}>Status</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px' }}>Priority</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px' }}>Due</th>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Type</th>
+              <th scope="col">Status</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Due</th>
             </tr>
           </thead>
           <tbody>
@@ -201,31 +148,18 @@ export default function List() {
               </tr>
             )}
             {!loading && filtered.map((t) => (
-              <tr
-                key={t.id}
-                style={{
-                  borderTop: '1px solid #EFE8FA',
-                  fontSize: 13,
-                }}
-              >
-                <td style={{
-                  padding: '14px 16px',
-                  fontWeight: 600,
-                  color: '#1A0E2E',
-                  maxWidth: 360,
-                }}>
-                  {t.title}
-                </td>
-                <td style={{ padding: '14px 16px', color: '#6B5B8E', textTransform: 'capitalize' }}>
+              <tr key={t.id}>
+                <td data-label="Title">{t.title}</td>
+                <td data-label="Type" style={{ color: '#6B5B8E', textTransform: 'capitalize' }}>
                   {t.type.replace('_', ' ')}
                 </td>
-                <td style={{ padding: '14px 16px' }}>
+                <td data-label="Status">
                   <StatusBadge status={t.status} />
                 </td>
-                <td style={{ padding: '14px 16px' }}>
+                <td data-label="Priority">
                   <PriorityBadge priority={t.priority} />
                 </td>
-                <td style={{ padding: '14px 16px', color: '#6B5B8E', whiteSpace: 'nowrap' }}>
+                <td data-label="Due" style={{ color: '#6B5B8E', whiteSpace: 'nowrap' }}>
                   {t.due_date
                     ? new Date(t.due_date).toLocaleDateString('en-US', {
                         month: 'short',
@@ -240,7 +174,7 @@ export default function List() {
         </table>
       </div>
 
-      <p style={{ fontSize: 12, color: '#9A8EB8', marginTop: 12 }}>
+      <p className="foot-note">
         {filtered.length} of {tasks.length} tasks
       </p>
     </div>

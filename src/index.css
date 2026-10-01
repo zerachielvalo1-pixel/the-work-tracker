@@ -1,111 +1,1058 @@
+/* ==========================================================================
+   the-work-tracker — global stylesheet
+   Mobile-first. Every layout decision below starts at 360px and widens.
+   Breakpoints: 560px (large phone), 900px (tablet / desktop shell).
+   ========================================================================== */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Brand palette */
+  --brand-1: #7c3aed;
+  --brand-2: #a855f7;
+  --brand-3: #d946ef;
+  --brand-grad: linear-gradient(135deg, #7c3aed, #a855f7, #d946ef);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Surfaces */
+  --bg: #faf8ff;
+  --surface: #fff;
+  --border: #e5ddf5;
+  --border-soft: #efe8fa;
+  --chip-bg: #f2edfb;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Text */
+  --ink: #1a0e2e;
+  --ink-2: #3d2e5c;
+  --muted: #6b5b8e;
+  --muted-2: #9a8eb8;
+  --danger-bg: #fdecea;
+  --danger-border: #f4b8b0;
+  --danger: #8f1d17;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --sidebar-w: 230px;
+  --header-h: 56px;
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+
+  --shadow-sm: 0 1px 2px rgba(26, 14, 46, 0.06);
+  --shadow-md: 0 4px 14px rgba(26, 14, 46, 0.08);
+  --shadow-lg: 0 18px 40px rgba(26, 14, 46, 0.18);
+
+  /* One shared easing so motion feels like one product */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* The app UI is a light UI. Saying so explicitly stops the OS dark theme
+     from re-colouring native <select>/<input>/date pickers into
+     dark-on-white unreadable controls. */
+  color-scheme: light;
+
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  /* Kills the sideways scroll that off-canvas / wide content used to cause */
+  overflow-x: hidden;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
 body {
   margin: 0;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tapping a control on iOS/Android shouldn't flash a grey box or wait 300ms */
+button,
+a,
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Visible keyboard focus everywhere, without a ring on mouse clicks */
+:focus-visible {
+  outline: 2px solid var(--brand-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
+h2,
+h3,
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+/* Honor reduced-motion: stop the drawer, spinner and transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-code {
+/* --------------------------------------------------------------------------
+   Brand wordmark ("the" + gradient "WORK")
+   -------------------------------------------------------------------------- */
+
+.brand {
+  font-family: var(--font-serif);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.brand__the {
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.brand__work {
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   App shell
+   Mobile: off-canvas drawer + sticky top bar.
+   >=900px: permanent two-column sidebar layout.
+   -------------------------------------------------------------------------- */
+
+.shell {
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--bg);
+}
+
+.shell__bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--header-h);
+  padding: 0 14px;
+  padding-top: env(safe-area-inset-top);
+  background: rgba(255, 255, 255, 0.86);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.shell__brand {
+  font-size: 18px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.shell__menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.shell__menu svg {
+  display: block;
+}
+
+.shell__menu:active {
+  background: var(--chip-bg);
+}
+
+/* --- Drawer (mobile only) --- */
+
+.shell__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(26, 14, 46, 0.42);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease);
+}
+
+.shell__scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Off-canvas, translated fully out of view so it is invisible to the eye
+   (visibility also keeps it out of the tab order and screen readers) */
+.shell__sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 60;
+  width: min(84vw, 300px);
+  display: flex;
+  flex-direction: column;
+  padding: calc(20px + env(safe-area-inset-top)) 14px
+    calc(16px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  visibility: hidden;
+  transform: translateX(-100%);
+  transition:
+    transform 0.28s var(--ease),
+    visibility 0.28s var(--ease);
+}
+
+.shell__sidebar.is-open {
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.shell__sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 22px;
+  padding: 0 6px 0 10px;
+}
+
+.shell__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.shell__close:active {
+  background: var(--chip-bg);
+}
+
+.shell__nav {
+  display: grid;
+  gap: 2px;
+}
+
+.shell__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  padding: 0 10px;
+  margin-bottom: 10px;
+}
+
+/* 44px tall on touch; the desktop rule below tightens it */
+.shell__nav button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 0.15s var(--ease);
+}
+
+.shell__nav button:active {
+  background: var(--chip-bg);
+}
+
+.shell__nav button.is-active {
+  background: var(--brand-grad);
+  color: #fff;
+}
+
+.shell__sidebar-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.shell__signout {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.shell__signout:active {
+  background: var(--danger-bg);
+}
+
+/* --- Main column --- */
+
+.shell__main {
+  /* The mobile bar already clears the safe area, so no top inset here */
+  padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Breakpoint: desktop / tablet shell
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 900px) {
+  .shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  }
+
+  .shell__bar {
+    display: none;
+  }
+
+  .shell__scrim {
+    display: none;
+  }
+
+  .shell__sidebar {
+    position: sticky;
+    top: 0;
+    inset: auto;
+    z-index: 1;
+    width: auto;
+    height: 100vh;
+    height: 100svh;
+    padding: 24px 14px;
+    box-shadow: none;
+    visibility: visible;
+    transform: none;
+    transition: none;
+  }
+
+  .shell__sidebar-head {
+    margin-bottom: 24px;
+  }
+
+  .shell__close {
+    display: none;
+  }
+
+  .shell__nav {
+    margin-bottom: 0;
+  }
+
+  .shell__nav button {
+    min-height: 0;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .shell__nav button:hover {
+    background: var(--chip-bg);
+  }
+
+  .shell__nav button.is-active:hover {
+    background: var(--brand-grad);
+  }
+
+  .shell__signout {
+    min-height: 0;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .shell__main {
+    padding: 32px 32px 64px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Page primitives
+   -------------------------------------------------------------------------- */
+
+.page__head {
+  margin-bottom: 24px;
+}
+
+.page__title {
+  font-family: var(--font-serif);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.page__sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Inside the shell, the page title can breathe a little more */
+@media (min-width: 560px) {
+  .page__title {
+    font-size: 26px;
+  }
+}
+
+@media (min-width: 900px) {
+  .page__title {
+    font-size: 28px;
+  }
+
+  .page__head {
+    margin-bottom: 28px;
+  }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+@media (min-width: 560px) {
+  .card {
+    padding: 22px;
+  }
+}
+
+.card__title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+.card__sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+.muted-note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.foot-note {
+  font-size: 12px;
+  color: var(--muted-2);
+  margin-top: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Stats (Overview)
+   Two comfortable columns on a phone, four on a desktop.
+   -------------------------------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.stat__value {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.stat__label {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (min-width: 560px) {
+  .stats {
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat {
+    padding: 18px;
+  }
+
+  .stat__value {
+    font-size: 28px;
+  }
+}
+
+@media (min-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Task rows (Overview deadlines)
+   Date drops under the title on a phone instead of squeezing it.
+   -------------------------------------------------------------------------- */
+
+.rows {
+  display: block;
+}
+
+.row-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.row-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.row-item__title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-item__meta {
+  font-size: 12px;
+  color: var(--muted-2);
+  margin-top: 2px;
+  text-transform: capitalize;
+}
+
+.row-item__date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+@media (min-width: 560px) {
+  .row-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .row-item__date {
+    text-align: right;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Toolbar (search + filter)
+   -------------------------------------------------------------------------- */
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.toolbar input,
+.toolbar select {
+  width: 100%;
+}
+
+@media (min-width: 560px) {
+  .toolbar {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .toolbar input {
+    flex: 1 1 auto;
+  }
+
+  .toolbar select {
+    width: auto;
+    min-width: 170px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Form controls
+   font-size must stay >= 16px or iOS Safari zooms the page on focus.
+   -------------------------------------------------------------------------- */
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 11px 13px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  transition:
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--muted-2);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--brand-2);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.16);
+}
+
+/* iOS renders date/number inputs with a shorter intrinsic height */
+.input[type='date'],
+.input[type='number'] {
+  min-height: 44px;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    opacity 0.15s var(--ease),
+    transform 0.1s var(--ease);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  color: #fff;
+  background: var(--brand-grad);
+  border-color: transparent;
+}
+
+.btn--ghost {
+  color: var(--ink-2);
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* Full-width stacked actions on a phone, inline from 560px up */
+.btn-row {
+  display: grid;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 560px) {
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Task table (List)
+   Phone: one card per task, labels from data-label.
+   >=900px: a real table.
+   -------------------------------------------------------------------------- */
+
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tasktable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tasktable th,
+.tasktable td {
+  text-align: left;
+  padding: 12px 16px;
+}
+
+@media (max-width: 899px) {
+  .tasktable,
+  .tasktable tbody,
+  .tasktable tr,
+  .tasktable td {
+    display: block;
+    width: 100%;
+  }
+
+  .tasktable thead {
+    /* Headers are replaced by inline labels; hiding them keeps the
+       accessibility tree clean (display:none, not just visually hidden,
+       because each cell repeats its own label). */
+    display: none;
+  }
+
+  .tasktable tr {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .tasktable tr:first-child {
+    border-top: none;
+  }
+
+  .tasktable td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 0;
+    max-width: none;
+  }
+
+  .tasktable td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+  }
+
+  .tasktable td[data-label='Title'] {
+    display: block;
+    padding-bottom: 8px;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  /* The title is self-evident; no need to shout "TITLE" above it */
+  .tasktable td[data-label='Title']::before {
+    display: none;
+  }
+
+  .tasktable td[colspan] {
+    display: block;
+    text-align: center;
+    padding: 32px 16px;
+  }
+
+  .tasktable td[colspan]::before {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .tasktable thead tr {
+    background: var(--chip-bg);
+  }
+
+  .tasktable th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .tasktable tbody tr {
+    border-top: 1px solid var(--border-soft);
+    font-size: 13px;
+  }
+
+  .tasktable td {
+    font-size: 13px;
+  }
+
+  .tasktable td[data-label='Title'] {
+    font-weight: 600;
+    color: var(--ink);
+    max-width: 380px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Badges
+   -------------------------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+/* --------------------------------------------------------------------------
+   Forms (New task)
+   -------------------------------------------------------------------------- */
+
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+
+.form-label__req {
+  color: var(--brand-1);
+}
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  padding: 10px 13px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 560px) {
+  .form-card {
+    padding: 28px;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Sign-in
+   100svh avoids the mobile URL-bar jump that 100vh causes.
+   -------------------------------------------------------------------------- */
+
+.signin {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: calc(20px + env(safe-area-inset-top)) 16px
+    calc(20px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+.signin__card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.signin__head {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.signin__brand {
+  font-size: 26px;
+}
+
+.signin__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 12px 0 4px;
+}
+
+.signin__sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+@media (min-width: 560px) {
+  .signin__card {
+    padding: 28px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Loading state
+   -------------------------------------------------------------------------- */
+
+.boot {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  justify-items: center;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+.boot__spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--brand-1);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Utility: screen-reader-only
+   -------------------------------------------------------------------------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
