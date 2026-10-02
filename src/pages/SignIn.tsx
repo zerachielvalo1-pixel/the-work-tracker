@@ -21,9 +21,16 @@ export default function SignIn() {
     setBusy(false)
 
     if (error) {
-      setError(error.message)
+      // Supabase returns the same message for a wrong password and a missing
+      // account, so give the user something they can act on.
+      setError(
+        error.message === 'Invalid login credentials'
+          ? 'That email and password combination did not work. Check for typos, or ask an editor to send you an invite.'
+          : error.message,
+      )
     }
-    // on success, App.tsx picks up the session change automatically
+    // On success App.tsx picks up the session change; the hash route is
+    // preserved, so you land back on the panel you originally asked for.
   }
 
   return (
@@ -80,7 +87,12 @@ export default function SignIn() {
           />
         </div>
 
-        <button type="submit" className="btn btn--primary" style={{ width: '100%' }} disabled={busy}>
+        <button
+          type="submit"
+          className="btn btn--primary"
+          style={{ width: '100%' }}
+          disabled={busy}
+        >
           {busy ? 'Signing in…' : 'Sign In'}
         </button>
       </form>

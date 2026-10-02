@@ -1,16 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
-
-type Section = { id: string; name: string }
-
-const TYPE_OPTIONS = [
-  'article', 'photo', 'illustration', 'layout',
-  'video', 'social', 'folio_piece', 'other',
-] as const
+import { useTasks } from '../lib/useTasks'
+import { TASK_TYPES, typeLabel } from '../lib/types'
+import type { TaskDraft } from '../lib/useTasks'
 
 export default function NewTask({ onSaved }: { onSaved: () => void }) {
-  const [sections, setSections] = useState<Section[]>([])
+  const { sections, createTask, error, clearError } = useTasks()
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [type, setType] = useState<string>('article')
@@ -20,50 +17,39 @@ export default function NewTask({ onSaved }: { onSaved: () => void }) {
   const [wordCount, setWordCount] = useState('')
   const [externalLink, setExternalLink] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    supabase
-      .from('sections')
-      .select('id,name')
-      .order('sort_order')
-      .then(({ data }) => setSections((data as Section[]) ?? []))
-  }, [])
+  const [saved, setSaved] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setError('')
+    clearError()
     setBusy(true)
 
     const { data: userData } = await supabase.auth.getUser()
+
     if (!userData.user) {
-      setError('Not signed in')
       setBusy(false)
       return
     }
 
-    const payload = {
+    const draft: TaskDraft = {
       title: title.trim(),
       description: description.trim() || null,
       type,
       section_id: sectionId || null,
       priority,
-      status: 'pitched',
       due_date: dueDate || null,
       target_word_count: wordCount ? parseInt(wordCount, 10) : null,
       external_link: externalLink.trim() || null,
-      created_by: userData.user.id,
     }
 
-    const { error } = await supabase.from('tasks').insert(payload)
+    const ok = await createTask(draft, userData.user.id)
     setBusy(false)
 
-    if (error) {
-      setError(error.message)
-      return
-    }
+    if (!ok) return
 
-    onSaved()
+    setSaved(true)
+    // Brief confirmation, then return to the list where the new task is visible.
+    window.setTimeout(onSaved, 550)
   }
 
   return (
@@ -82,9 +68,15 @@ export default function NewTask({ onSaved }: { onSaved: () => void }) {
           </div>
         )}
 
+        {saved && (
+          <div className="notice" role="status">
+            Saved. Taking you to the list…
+          </div>
+        )}
+
         <div className="form-field">
           <label className="form-label" htmlFor="nt-title">
-            Title <span className="form-label__req">*</span>
+            Title <span className="form-label__req" aria-hidden="true">*</span>
           </label>
           <input
             id="nt-title"
@@ -95,6 +87,7 @@ export default function NewTask({ onSaved }: { onSaved: () => void }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             enterKeyHint="next"
+            aria-required="true"
           />
         </div>
 
@@ -114,7 +107,7 @@ export default function NewTask({ onSaved }: { onSaved: () => void }) {
         <div className="form-grid">
           <div>
             <label className="form-label" htmlFor="nt-type">
-              Type <span className="form-label__req">*</span>
+              Type <span className="form-label__req" aria-hidden="true">*</span>
             </label>
             <select
               id="nt-type"
@@ -122,10 +115,8 @@ export default function NewTask({ onSaved }: { onSaved: () => void }) {
               value={type}
               onChange={(e) => setType(e.target.value)}
             >
-              {TYPE_OPTIONS.map((t) => (
-                <option key={t} value={t}>
-                  {t.replace('_', ' ')}
-                </option>
+              {TASK_TYPES.map((t) => (
+                <option key={t} value={t}>{typeLabel(t)}</option>
               ))}
             </select>
           </div>

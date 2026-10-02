@@ -1,35 +1,47 @@
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import type { PanelKey } from '../lib/useHashRoute'
 
-export type PanelKey =
-  | 'overview' | 'board' | 'list' | 'calendar'
-  | 'issues' | 'pitches' | 'team' | 'settings' | 'new-task'
+export type { PanelKey }
 
-const NAV: { key: PanelKey; label: string }[] = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'board',    label: 'Board' },
-  { key: 'list',     label: 'List' },
-  { key: 'new-task', label: 'New task' },
-  { key: 'calendar', label: 'Calendar' },
-  { key: 'issues',   label: 'Issues' },
-  { key: 'pitches',  label: 'Pitch box' },
-  { key: 'team',     label: 'Team' },
-  { key: 'settings', label: 'Settings' },
+type NavItem = { key: PanelKey; label: string }
+
+/**
+ * Navigation is grouped and explicitly honest about what exists: `planned`
+ * items are rendered as disabled "soon" rows rather than dead links that open
+ * a blank panel.
+ */
+const NAV_GROUPS: { label: string; items: NavItem[]; planned?: boolean }[] = [
+  {
+    label: 'Workspace',
+    items: [
+      { key: 'overview', label: 'Overview' },
+      { key: 'board', label: 'Board' },
+      { key: 'list', label: 'List' },
+      { key: 'calendar', label: 'Calendar' },
+    ],
+  },
+  {
+    label: 'Editorial',
+    items: [
+      { key: 'pitches', label: 'Pitch box' },
+      { key: 'new-task', label: 'New task' },
+    ],
+  },
+  {
+    label: 'Planned',
+    planned: true,
+    items: [
+      { key: 'issues', label: 'Issues' },
+      { key: 'team', label: 'Team' },
+    ],
+  },
 ]
 
 function MenuIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
       <path d="M3 6h18M3 12h18M3 18h18" />
     </svg>
   )
@@ -37,16 +49,7 @@ function MenuIcon() {
 
 function CloseIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
       <path d="M6 6l12 12M18 6L6 18" />
     </svg>
   )
@@ -63,7 +66,6 @@ export default function AdminShell({
 }) {
   const [open, setOpen] = useState(false)
 
-  // Close the drawer on Escape so it behaves like a real dialog
   useEffect(() => {
     if (!open) return
     function onKeyDown(e: KeyboardEvent) {
@@ -73,8 +75,6 @@ export default function AdminShell({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [open])
 
-  // Stop the page behind the drawer from scrolling (the body-scroll-lock
-  // problem that makes off-canvas menus feel broken on iOS)
   useEffect(() => {
     if (!open) return
     const previous = document.body.style.overflow
@@ -91,7 +91,10 @@ export default function AdminShell({
 
   return (
     <div className="shell">
-      {/* Mobile top bar — hidden from 900px up */}
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
+
       <header className="shell__bar">
         <button
           type="button"
@@ -109,7 +112,6 @@ export default function AdminShell({
         </span>
       </header>
 
-      {/* Tap-outside target for the drawer */}
       <div
         className={open ? 'shell__scrim is-open' : 'shell__scrim'}
         onClick={() => setOpen(false)}
@@ -135,36 +137,65 @@ export default function AdminShell({
           </button>
         </div>
 
-        <div className="shell__label" id="app-nav-label">
-          Dashboard
-        </div>
-
-        <nav className="shell__nav" aria-labelledby="app-nav-label">
-          {NAV.map((n) => (
-            <button
-              key={n.key}
-              type="button"
-              className={active === n.key ? 'is-active' : undefined}
-              onClick={() => navigate(n.key)}
-              aria-current={active === n.key ? 'page' : undefined}
-            >
-              {n.label}
-            </button>
+        <nav className="shell__nav" aria-label="Main">
+          {NAV_GROUPS.map((group) => (
+            <div className="shell__group" key={group.label}>
+              <div className="shell__label" id={`nav-${group.label}`}>
+                {group.label}
+              </div>
+              <div role="group" aria-labelledby={`nav-${group.label}`}>
+                {group.items.map((n) =>
+                  group.planned ? (
+                    <button
+                      key={n.key}
+                      type="button"
+                      className="is-planned"
+                      onClick={() => navigate(n.key)}
+                      title="Not built yet — shows a placeholder"
+                      aria-current={active === n.key ? 'page' : undefined}
+                    >
+                      {n.label}
+                      <span className="shell__soon">soon</span>
+                    </button>
+                  ) : (
+                    <button
+                      key={n.key}
+                      type="button"
+                      className={active === n.key ? 'is-active' : undefined}
+                      onClick={() => navigate(n.key)}
+                      aria-current={active === n.key ? 'page' : undefined}
+                    >
+                      {n.label}
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
           ))}
         </nav>
 
         <div className="shell__sidebar-foot">
           <button
             type="button"
+            className={active === 'settings' ? 'shell__signout is-active' : 'shell__signout'}
+            onClick={() => navigate('settings')}
+            aria-current={active === 'settings' ? 'page' : undefined}
+          >
+            Settings
+          </button>
+          <button
+            type="button"
             className="shell__signout"
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => void supabase.auth.signOut()}
           >
             Sign out
           </button>
         </div>
       </aside>
 
-      <main className="shell__main">{children}</main>
+      <main className="shell__main" id="main-content" tabIndex={-1}>
+        {children}
+      </main>
     </div>
   )
 }

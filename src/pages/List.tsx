@@ -1,83 +1,66 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { useMemo, useState } from 'react'
+import { PriorityBadge, StatusBadge } from '../components/Badges'
+import TaskDrawer from '../components/TaskDrawer'
+import { useTasks } from '../lib/useTasks'
+import { formatDate, isOverdue, statusLabel } from '../lib/types'
+import type { Task } from '../lib/types'
 
-type Task = {
-  id: string
-  title: string
-  type: string
-  status: string
-  priority: string
-  due_date: string | null
-}
+type SortKey = 'newest' | 'due' | 'priority'
 
-const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
-  pitched:     { bg: '#F3EFEA', fg: '#7A6E64' },
-  assigned:    { bg: '#E7F0FB', fg: '#1F5FA8' },
-  in_progress: { bg: '#EFE8FA', fg: '#7C3AED' },
-  in_review:   { bg: '#F0EAF7', fg: '#6A4C93' },
-  copyread:    { bg: '#FCEFFE', fg: '#B01FA8' },
-  layout:      { bg: '#FFF4E5', fg: '#9A5B00' },
-  approval:    { bg: '#FFF9DB', fg: '#8A6D00' },
-  done:        { bg: '#E6F4EC', fg: '#1F7A4D' },
-  killed:      { bg: '#FDECEA', fg: '#8F1D17' },
-}
+const PRIORITY_RANK: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 }
 
-const PRIORITY_COLORS: Record<string, { bg: string; fg: string }> = {
-  low:    { bg: '#F2EDFB', fg: '#6B5B8E' },
-  normal: { bg: '#F2EDFB', fg: '#3D2E5C' },
-  high:   { bg: '#FFF4E5', fg: '#9A5B00' },
-  urgent: { bg: '#FDECEA', fg: '#8F1D17' },
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const c = STATUS_COLORS[status] ?? { bg: '#F2EDFB', fg: '#3D2E5C' }
-  return (
-    <span className="badge" style={{ background: c.bg, color: c.fg }}>
-      {status.replace('_', ' ')}
-    </span>
-  )
-}
-
-function PriorityBadge({ priority }: { priority: string }) {
-  const c = PRIORITY_COLORS[priority] ?? { bg: '#F2EDFB', fg: '#3D2E5C' }
-  return (
-    <span className="badge" style={{ background: c.bg, color: c.fg }}>
-      {priority}
-    </span>
-  )
-}
+const SORTS: { key: SortKey; label: string }[] = [
+  { key: 'newest', label: 'Newest' },
+  { key: 'due', label: 'Due date' },
+  { key: 'priority', label: 'Priority' },
+]
 
 export default function List() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
+  const { tasks, loading } = useTasks()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [sort, setSort] = useState<SortKey>('newest')
+  const [selected, setSelected] = useState<Task | null>(null)
 
-  useEffect(() => {
-    supabase
-      .from('tasks')
-      .select('id,title,type,status,priority,due_date')
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (error) console.error(error)
-        setTasks((data as Task[]) ?? [])
-        setLoading(false)
+  const filtered = useMemo(() => {
+    const needle = search.trim().toLowerCase()
+    const rows = tasks.filter((t) => {
+      if (statusFilter && t.status !== statusFilter) return false
+      if (needle && !t.title.toLowerCase().includes(needle)) return false
+      return true
+    })
+
+    const sorted = [...rows]
+    if (sort === 'due') {
+      // Undated tasks sort last rather than first.
+      sorted.sort((a, b) => {
+        if (!a.due_date && !b.due_date) return 0
+        if (!a.due_date) return 1
+        if (!b.due_date) return -1
+        return a.due_date.localeCompare(b.due_date)
       })
-  }, [])
+    } else if (sort === 'priority') {
+      sorted.sort(
+        (a, b) => (PRIORITY_RANK[a.priority] ?? 9) - (PRIORITY_RANK[b.priority] ?? 9),
+      )
+    } else {
+      sorted.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
+    }
+    return sorted
+  }, [tasks, search, statusFilter, sort])
 
-  const filtered = tasks.filter((t) => {
-    if (statusFilter && t.status !== statusFilter) return false
-    if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  const statusOptions = useMemo(
+    () => [...new Set(tasks.map((t) => t.status))].sort(),
+    [tasks],
+  )
+
+  const selectedTask = selected ? tasks.find((t) => t.id === selected.id) ?? selected : null
 
   return (
     <div>
       <div className="page__head">
         <h1 className="page__title">All tasks</h1>
-        <p className="page__sub">
-          Every story, photo, and layout in one place.
-        </p>
+        <p className="page__sub">Every story, photo, and layout in one place.</p>
       </div>
 
       <div className="toolbar">
@@ -106,15 +89,23 @@ export default function List() {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="">All statuses</option>
-          <option value="pitched">Pitched</option>
-          <option value="assigned">Assigned</option>
-          <option value="in_progress">In progress</option>
-          <option value="in_review">In review</option>
-          <option value="copyread">Copyread</option>
-          <option value="layout">Layout</option>
-          <option value="approval">Approval</option>
-          <option value="done">Done</option>
-          <option value="killed">Killed</option>
+          {statusOptions.map((s) => (
+            <option key={s} value={s}>{statusLabel(s)}</option>
+          ))}
+        </select>
+
+        <label className="sr-only" htmlFor="task-sort">
+          Sort tasks
+        </label>
+        <select
+          id="task-sort"
+          className="select"
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortKey)}
+        >
+          {SORTS.map((s) => (
+            <option key={s.key} value={s.key}>Sort: {s.label}</option>
+          ))}
         </select>
       </div>
 
@@ -135,23 +126,27 @@ export default function List() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={5} style={{ padding: 32, textAlign: 'center', color: '#9A8EB8', fontSize: 13 }}>
-                  Loading…
-                </td>
+                <td colSpan={5} className="table-empty">Loading…</td>
               </tr>
             )}
             {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: 40, textAlign: 'center', color: '#9A8EB8', fontSize: 13 }}>
-                  No tasks match.
+                <td colSpan={5} className="table-empty">
+                  {tasks.length === 0
+                    ? 'No tasks yet. Use New task to add the first one.'
+                    : 'No tasks match these filters.'}
                 </td>
               </tr>
             )}
             {!loading && filtered.map((t) => (
               <tr key={t.id}>
-                <td data-label="Title">{t.title}</td>
-                <td data-label="Type" style={{ color: '#6B5B8E', textTransform: 'capitalize' }}>
-                  {t.type.replace('_', ' ')}
+                <td data-label="Title">
+                  <button type="button" className="rowlink" onClick={() => setSelected(t)}>
+                    {t.title}
+                  </button>
+                </td>
+                <td data-label="Type" style={{ color: 'var(--muted)', textTransform: 'capitalize' }}>
+                  {t.type.replace(/_/g, ' ')}
                 </td>
                 <td data-label="Status">
                   <StatusBadge status={t.status} />
@@ -159,14 +154,12 @@ export default function List() {
                 <td data-label="Priority">
                   <PriorityBadge priority={t.priority} />
                 </td>
-                <td data-label="Due" style={{ color: '#6B5B8E', whiteSpace: 'nowrap' }}>
-                  {t.due_date
-                    ? new Date(t.due_date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
-                    : '—'}
+                <td
+                  data-label="Due"
+                  className={isOverdue(t) ? 'is-overdue' : undefined}
+                  style={{ color: 'var(--muted)', whiteSpace: 'nowrap' }}
+                >
+                  {formatDate(t.due_date, true)}
                 </td>
               </tr>
             ))}
@@ -176,7 +169,12 @@ export default function List() {
 
       <p className="foot-note">
         {filtered.length} of {tasks.length} tasks
+        {statusFilter && ` · filtered to ${statusLabel(statusFilter)}`}
       </p>
+
+      {selectedTask && (
+        <TaskDrawer task={selectedTask} onClose={() => setSelected(null)} />
+      )}
     </div>
   )
 }

@@ -37,17 +37,99 @@
   --shadow-md: 0 4px 14px rgba(26, 14, 46, 0.08);
   --shadow-lg: 0 18px 40px rgba(26, 14, 46, 0.18);
 
+  /* Translucent surfaces for backdrops and the blurred mobile top bar */
+  --surface-glass: rgba(255, 255, 255, 0.86);
+  --scrim: rgba(26, 14, 46, 0.42);
+
+  /* Overdue emphasis, shared by every date rendering */
+  --danger-soft: #fdecea;
+
+  /* Loading placeholders */
+  --skeleton: #f1ecfa;
+  --skeleton-shine: #e6dcf7;
+
+  --focus-ring: rgba(168, 85, 247, 0.16);
+
   /* One shared easing so motion feels like one product */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* The app UI is a light UI. Saying so explicitly stops the OS dark theme
-     from re-colouring native <select>/<input>/date pickers into
-     dark-on-white unreadable controls. */
+  /* Light by default. Settings can force dark via [data-theme="dark"], and
+     "Match device" is handled by the media query below. Declaring the scheme
+     keeps native inputs consistent instead of half-dark. */
   color-scheme: light;
 
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
+
+/* --------------------------------------------------------------------------
+   Dark theme
+   Applied when Settings chooses dark, or automatically when the device is in
+   dark mode and the user has not overridden it.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0f0d15;
+  --surface: #191722;
+  --border: #2b2739;
+  --border-soft: #241f31;
+  --chip-bg: #241f31;
+
+  --ink: #f3f1f8;
+  --ink-2: #cdc7dd;
+  --muted: #a49cbb;
+  --muted-2: #837b99;
+  --danger: #ff9d94;
+  --danger-bg: #3a1d1a;
+  --danger-border: #6b3030;
+  --danger-soft: #3a1d1a;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.6);
+
+  --surface-glass: rgba(25, 23, 34, 0.86);
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  --skeleton: #221e2e;
+  --skeleton-shine: #2c2739;
+  --focus-ring: rgba(192, 132, 252, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+
+    --bg: #0f0d15;
+    --surface: #191722;
+    --border: #2b2739;
+    --border-soft: #241f31;
+    --chip-bg: #241f31;
+
+    --ink: #f3f1f8;
+    --ink-2: #cdc7dd;
+    --muted: #a49cbb;
+    --muted-2: #837b99;
+    --danger: #ff9d94;
+    --danger-bg: #3a1d1a;
+    --danger-border: #6b3030;
+    --danger-soft: #3a1d1a;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.6);
+
+    --surface-glass: rgba(25, 23, 34, 0.86);
+    --scrim: rgba(0, 0, 0, 0.6);
+
+    --skeleton: #221e2e;
+    --skeleton-shine: #2c2739;
+    --focus-ring: rgba(192, 132, 252, 0.25);
+  }
+}
+
 
 *,
 *::before,
@@ -169,7 +251,7 @@ p {
   height: var(--header-h);
   padding: 0 14px;
   padding-top: env(safe-area-inset-top);
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--surface-glass);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
   backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid var(--border);
@@ -209,7 +291,7 @@ p {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(26, 14, 46, 0.42);
+  background: var(--scrim);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   opacity: 0;
@@ -691,7 +773,7 @@ p {
 .select:focus,
 .textarea:focus {
   border-color: var(--brand-2);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.16);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 /* iOS renders date/number inputs with a shorter intrinsic height */
@@ -1056,3 +1138,957 @@ p {
   white-space: nowrap;
   border: 0;
 }
+
+/* --------------------------------------------------------------------------
+   Skip link — visible only on keyboard focus
+   -------------------------------------------------------------------------- */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+}
+
+.skip-link:focus {
+  left: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar nav groups
+   -------------------------------------------------------------------------- */
+
+.shell__group + .shell__group {
+  margin-top: 18px;
+}
+
+.shell__nav .is-planned {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  opacity: 0.55;
+}
+
+.shell__soon {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted-2);
+}
+
+.shell__signout.is-active {
+  background: var(--chip-bg);
+}
+
+/* --------------------------------------------------------------------------
+   Page head with a trailing action
+   -------------------------------------------------------------------------- */
+
+.page__head--row {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.page__head--row .btn {
+  align-self: flex-start;
+}
+
+@media (min-width: 720px) {
+  .page__head--row {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .page__head--row .btn {
+    flex: 0 0 auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Skeletons — replace bare "Loading…" text
+   -------------------------------------------------------------------------- */
+
+.skeleton {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton) 25%,
+    var(--skeleton-shine) 37%,
+    var(--skeleton) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton--title {
+  height: 14px;
+  width: 60%;
+  margin-bottom: 12px;
+}
+
+.skeleton--card {
+  height: 62px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
+.skeleton--row {
+  height: 18px;
+  margin-bottom: 14px;
+}
+
+.skeleton--row:last-child {
+  margin-bottom: 0;
+  width: 70%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--skeleton);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Empty states
+   -------------------------------------------------------------------------- */
+
+.empty-state {
+  text-align: center;
+  padding: 26px 12px;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.empty-state__title {
+  font-weight: 650;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+/* --------------------------------------------------------------------------
+   Alerts and inline notices
+   -------------------------------------------------------------------------- */
+
+.alert--row {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.alert__dismiss {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.notice {
+  background: #e6f4ec;
+  border: 1px solid #a8d9bf;
+  color: #1f7a4d;
+  padding: 10px 13px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+:root[data-theme='dark'] .notice {
+  background: #14291f;
+  border-color: #2f5c44;
+  color: #8fe3b4;
+}
+
+.error-detail {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: var(--chip-bg);
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------------------------
+   Button variants and small links
+   -------------------------------------------------------------------------- */
+
+.btn--danger {
+  color: #fff;
+  background: #c0392b;
+  border-color: transparent;
+}
+
+.btn--danger-text {
+  color: var(--danger);
+}
+
+.btn--icon {
+  padding: 0;
+  width: 44px;
+  min-width: 44px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.card--alert {
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+}
+
+.foot-link {
+  margin-top: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-1);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Rows rendered as buttons (Overview) keep the row look but become tappable */
+.row-item--button {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  border-radius: 0;
+}
+
+.row-item--button:last-child {
+  border-bottom: none;
+}
+
+.row-item--button:hover {
+  background: var(--chip-bg);
+}
+
+.row-item__meta .badge {
+  margin-right: 4px;
+}
+
+.table-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--muted-2);
+  font-size: 13px;
+}
+
+/* Truncating link inside the table, so long titles don't blow out a row */
+.rowlink {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s var(--ease);
+}
+
+.rowlink:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Overdue emphasis. The doubled class raises specificity to (0,2,0) so it
+   wins over later single-class colour rules such as .tcard__meta and
+   .row-item__meta, regardless of where those are declared. */
+.is-overdue.is-overdue {
+  color: var(--danger) !important;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Team and Pitches cards
+   -------------------------------------------------------------------------- */
+
+.pitch-list {
+  display: grid;
+  gap: 12px;
+}
+
+.pitch {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pitch__main {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.pitch__main:hover {
+  background: var(--chip-bg);
+}
+
+.pitch__title {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.pitch__desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pitch__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
+.pitch__type {
+  text-transform: capitalize;
+}
+
+/* --------------------------------------------------------------------------
+   Task drawer / sheet
+   Mobile: full-height panel from the right.
+   Desktop: fixed side panel with a dimmed backdrop.
+   -------------------------------------------------------------------------- */
+
+.sheet__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--scrim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease);
+}
+
+.sheet__scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sheet {
+  position: fixed;
+  z-index: 80;
+  inset: 0 0 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  animation: sheet-in 0.26s var(--ease);
+  overscroll-behavior: contain;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 720px) {
+  .sheet {
+    width: min(440px, 92vw);
+    border-left: 1px solid var(--border);
+  }
+}
+
+.sheet__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(16px + env(safe-area-inset-top)) 18px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet__title {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.25;
+  color: var(--ink);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sheet__close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.sheet__close:hover {
+  background: var(--chip-bg);
+}
+
+.sheet__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.sheet__section {
+  margin-top: 22px;
+}
+
+.sheet__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  margin: 0 0 8px;
+}
+
+.sheet__text {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sheet__link {
+  display: inline-block;
+  min-height: 36px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--brand-1);
+  overflow-wrap: anywhere;
+}
+
+.sheet__foot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px calc(18px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 560px) {
+  .sheet__foot {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* Definition list of task facts */
+.detail {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.detail__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.detail__row:last-child {
+  border-bottom: none;
+}
+
+.detail__row dt {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.detail__row dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* Status chips inside the drawer */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 36px;
+  padding: 7px 13px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s var(--ease);
+}
+
+.chip:hover:not(:disabled) {
+  background: var(--chip-bg);
+}
+
+.chip:disabled {
+  opacity: 1;
+  cursor: default;
+  color: #fff;
+  background: var(--brand-grad);
+  border-color: transparent;
+}
+
+.chip--danger {
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+
+/* --------------------------------------------------------------------------
+   Board (kanban)
+   Phones scroll one column at a time with snap; desktop shows a grid.
+   -------------------------------------------------------------------------- */
+
+.board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 78vw);
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.board__col {
+  scroll-snap-align: start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 140px;
+}
+
+.board__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+
+.board__count {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--muted-2);
+  background: var(--chip-bg);
+  border-radius: 999px;
+  padding: 1px 8px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.board__empty {
+  font-size: 12px;
+  color: var(--muted-2);
+  padding: 10px 2px;
+}
+
+@media (min-width: 760px) {
+  .board {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-columns: auto;
+    overflow-x: visible;
+  }
+}
+
+@media (min-width: 1100px) {
+  .board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Task card inside a board column */
+.tcard {
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.tcard:last-child {
+  margin-bottom: 0;
+}
+
+.tcard__main {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  padding: 10px 11px 6px;
+  cursor: pointer;
+}
+
+.tcard__main:hover {
+  background: var(--chip-bg);
+}
+
+.tcard__title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.tcard__meta {
+  display: block;
+  font-size: 11px;
+  color: var(--muted-2);
+  margin-top: 4px;
+  text-transform: capitalize;
+}
+
+.tcard__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 11px 10px;
+  flex-wrap: wrap;
+}
+
+.tcard__next {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  /* Negative inline padding keeps the tap area wide without shifting the
+     card's visual alignment. */
+  margin: -8px -8px -8px 0;
+  padding: 8px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--brand-1);
+  cursor: pointer;
+  text-align: right;
+}
+
+.tcard__next:hover {
+  text-decoration: underline;
+}
+
+.tcard--muted {
+  opacity: 0.6;
+}
+
+.board--killed {
+  margin-top: 12px;
+}
+
+.board__killed {
+  margin-top: 20px;
+}
+
+.disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  padding: 8px 2px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.disclosure__caret {
+  display: inline-block;
+  transition: transform 0.15s var(--ease);
+}
+
+.disclosure__caret.is-open {
+  transform: rotate(90deg);
+}
+
+/* --------------------------------------------------------------------------
+   Calendar
+   Phones get an agenda; the month grid appears from 720px.
+   -------------------------------------------------------------------------- */
+
+.cal__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cal__month {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0;
+  min-width: 9ch;
+}
+
+.cal__today {
+  margin-left: auto;
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.cal__grid-wrap {
+  display: none;
+  padding: 10px;
+}
+
+.cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.cal__dow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  text-align: center;
+  padding: 6px 0;
+}
+
+.cal__cell {
+  min-height: 84px;
+  padding: 5px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.cal__cell.is-outside {
+  opacity: 0.42;
+  background: transparent;
+}
+
+.cal__cell.is-today {
+  border-color: var(--brand-2);
+  box-shadow: inset 0 0 0 1px var(--brand-2);
+}
+
+.cal__daynum {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.cal__pill {
+  display: block;
+  width: 100%;
+  min-height: 24px;
+  text-align: left;
+  background: var(--chip-bg);
+  border: none;
+  border-radius: 5px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal__pill:hover {
+  background: var(--brand-grad);
+  color: #fff;
+}
+
+.cal__more {
+  font-size: 10px;
+  color: var(--muted-2);
+  padding-left: 2px;
+}
+
+.cal__agenda {
+  display: block;
+}
+
+.agenda__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  padding: 12px 2px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.agenda__row:last-child {
+  border-bottom: none;
+}
+
+.agenda__row:hover {
+  background: var(--chip-bg);
+}
+
+.agenda__date {
+  flex: 0 0 auto;
+  min-width: 58px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-1);
+}
+
+.agenda__body {
+  min-width: 0;
+  display: block;
+}
+
+@media (min-width: 720px) {
+  .cal__grid-wrap {
+    display: block;
+  }
+
+  .cal__agenda {
+    display: none;
+  }
+
+  /* A month grid is inherently dense; give the pills real padding once there
+     is room for it, rather than at phone widths where it would overflow. */
+  .cal__cell {
+    min-height: 96px;
+  }
+
+  .cal__pill {
+    min-height: 28px;
+    padding: 5px 7px;
+    font-size: 11px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Settings
+   -------------------------------------------------------------------------- */
+
+.settings__value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+

@@ -50,10 +50,56 @@ Three breakpoints, chosen for real device classes:
 - **Off-canvas drawer** locks body scroll while open, closes on `Escape`, on
   scrim tap and on navigation, and uses `visibility: hidden` when closed so it
   stays out of the tab order and the accessibility tree.
-- **`prefers-reduced-motion`** disables the drawer transition and spinner.
-- **`color-scheme: light`** is declared explicitly. The app paints a light UI,
-  so without this an OS in dark mode draws native `<select>`, date and number
-  controls dark-on-white and they become unreadable.
+- **`prefers-reduced-motion`** disables the drawer transition, the sheet
+  animation and the loading shimmer.
+- **Native controls are themed explicitly.** Rather than relying on the OS, the
+  stylesheet sets `color-scheme` per theme, so `<select>`, date and number
+  inputs are never drawn dark-on-white.
+
+## Screens
+
+| Panel | State | Notes |
+| --- | --- | --- |
+| Overview | shipped | Stat cards, overdue callout, next six deadlines |
+| Board | shipped | Kanban by workflow status with a one-tap "Next" advance |
+| List | shipped | Table on desktop, labelled cards on phones, search + status filter + sort |
+| Calendar | shipped | Month grid from 720px, chronological agenda on phones |
+| Pitch box | shipped | Everything still at `pitched`, with descriptions |
+| New task | shipped | The full pitch form |
+| Settings | shipped | Account, theme, manual refresh |
+| Issues | planned | Needs issue records; `tasks.issue_id` already exists |
+| Team | planned | Needs `assignee_id` on tasks and a role on profiles — neither column exists |
+
+Planned panels are labelled "soon" in the sidebar and explain what they are
+missing rather than showing a blank screen.
+
+## Architecture
+
+- **`src/lib/types.ts`** — domain model. The column lists are *verified against
+  the live database*, not assumed. `assignee_id`, `tags` and `notes` look
+  plausible but do not exist, so they are deliberately absent. If you add a
+  column, update `TASK_COLUMNS` and the `Task` type together.
+- **`src/lib/useTasks.ts` + `src/components/TaskProvider.tsx`** — one shared
+  task store. The app loads tasks and sections once; every panel reads from it,
+  so a change on the board is instantly visible in the list and counts.
+  Mutations are optimistic and roll back on failure, so the UI never shows
+  unsaved state as saved.
+- **`src/lib/useHashRoute.ts`** — panel selection lives in the URL hash.
+  Refreshing keeps your place, the back button works, and `#/board` is a
+  shareable link.
+- **`src/components/ErrorBoundary.tsx`** — a render error shows a message and a
+  retry instead of a blank page.
+- **`src/components/TaskDrawer.tsx`** — the detail sheet. It surfaces fields the
+  app stores but previously never displayed (description, word count, external
+  links, completion date).
+
+## Theming
+
+Three options in Settings: **Match device**, **Light**, **Dark**. The choice is
+stored in `localStorage` under `tw-tracker-theme` and applied by `initTheme()`
+in `main.tsx` before React renders, so there is no flash of the wrong theme.
+`data-theme` on `<html>` drives the CSS variables; with "Match device" the
+variables follow `prefers-color-scheme`.
 
 ## Performance
 
@@ -97,16 +143,35 @@ variables for the build step.
 
 ## Local responsive verification
 
-`verify/` holds throwaway tooling used to check the responsive work in a real
-browser (Chrome DevTools Protocol with exact viewport emulation). It is not part
-of the app and is safe to delete.
+`verify/` holds throwaway tooling that checks the layout in a real browser via
+the Chrome DevTools Protocol with exact viewport emulation. It is not part of
+the app and is safe to delete. Screenshots it produces are gitignored because
+they are regenerated on every run.
 
 ```bash
-node verify/serve.mjs          # serves the project + dist assets on :4319
-node verify/capture.mjs 9222   # screenshots + overflow / touch-target metrics
-node verify/measure.mjs 9222   # confirm all content shares one column edge
-node verify/drawer.mjs 9222    # drawer open-state assertions
+npm run build                  # the previews load the built stylesheet
+
+# one-off: start the preview server and a headless Chrome
+node verify/serve.mjs                                                    # :4319
+chrome --headless=new --remote-debugging-port=9222 --user-data-dir=verify/chrome-profile about:blank
+
+# then, whenever layout changes:
+node verify/check-all.mjs 9222 light   # 16 page/viewport combos, both themes
+node verify/check-all.mjs 9222 dark
+node verify/probe.mjs                  # grid geometry: is anything clipped?
+powershell -File verify/fix-previews.ps1   # re-point previews at the new CSS hash
 ```
 
-The `9222` scripts expect a headless Chrome started with
-`--remote-debugging-port=9222`.
+`check-all.mjs` fails loudly on horizontal overflow, undersized touch targets,
+and any element whose computed overdue colour does not match `--danger`.
+
+The preview pages (`verify/*-preview.html`) are static markup rendered against
+the real compiled stylesheet. They deliberately do **not** exercise Supabase, so
+they verify layout, theming and responsive behaviour — not data flow. Anything
+involving real records has to be checked in the running app.
+
+Note: `verify/fix-previews.ps1` is pure ASCII on purpose. Windows PowerShell
+reads `.ps1` files as ANSI unless they carry a UTF-8 BOM, so non-ASCII
+characters in a script get mangled before it runs; Unicode is emitted with
+`[char]0x....` instead.
+
